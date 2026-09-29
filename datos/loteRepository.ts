@@ -11,5 +11,5 @@ export async function consultarLotesDisponibles(): Promise<PostgrestResponse<any
     .select(
       '*, constructoras(nombre_empresa, telefono, contacto_responsable)',
     )
-    .eq('estado', 'Disponible');
+    .in('estado', ['Disponible', 'Reservado']);
 }

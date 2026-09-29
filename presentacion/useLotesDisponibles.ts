@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { obtenerLotesDisponibles } from '../negocio/rcdService';
 import { Lote } from '../negocio/types';
 
@@ -8,6 +8,7 @@ interface UseLotesDisponiblesResult {
   lotes: Lote[];
   cargando: boolean;
   error: string;
+  recargar: () => void;
 }
 
 export function useLotesDisponibles(): UseLotesDisponiblesResult {
@@ -15,26 +16,22 @@ export function useLotesDisponibles(): UseLotesDisponiblesResult {
   const [cargando, setCargando] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
 
-  useEffect(() => {
-    let activo = true;
+  const cargarLotes = useCallback(async () => {
+    setCargando(true);
+    const resultado = await obtenerLotesDisponibles();
 
-    async function cargarLotes() {
-      const resultado = await obtenerLotesDisponibles();
-      if (!activo) return;
-
-      if (resultado.success && resultado.data) {
-        setLotes(resultado.data);
-      } else {
-        setError(resultado.error || 'No fue posible cargar los lotes disponibles.');
-      }
-      setCargando(false);
+    if (resultado.success && resultado.data) {
+      setLotes(resultado.data);
+      setError('');
+    } else {
+      setError(resultado.error || 'No fue posible cargar los lotes disponibles.');
     }
-
-    cargarLotes();
-    return () => {
-      activo = false;
-    };
+    setCargando(false);
   }, []);
 
-  return { lotes, cargando, error };
+  useEffect(() => {
+    cargarLotes();
+  }, [cargarLotes]);
+
+  return { lotes, cargando, error, recargar: cargarLotes };
 }

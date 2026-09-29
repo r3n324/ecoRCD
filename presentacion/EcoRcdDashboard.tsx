@@ -3,22 +3,76 @@
 import { useState } from 'react';
 import { useLotesDisponibles } from './useLotesDisponibles';
 import LoteCard from './LoteCard';
+import LoteModal from './LoteModal';
+import { obtenerClienteSupabase } from '../datos/supabase';
 
 function formatoVolumen(valor: number): string {
   return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 }).format(valor);
 }
 
 export default function EcoRcdDashboard() {
-  const { lotes, cargando, error } = useLotesDisponibles();
+  const { lotes, cargando, error, recargar } = useLotesDisponibles();
   const [aviso, setAviso] = useState<string>('');
   
+  // Modal State
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loteEditando, setLoteEditando] = useState<any>(null);
+
   const volumenTotal = lotes.reduce(
     (total, lote) => total + (Number(lote.volumen_m3) || 0),
     0,
   );
 
+  const handleCrear = () => {
+    setLoteEditando(null);
+    setModalVisible(true);
+  };
+
+  const handleEditar = (lote: any) => {
+    setLoteEditando(lote);
+    setModalVisible(true);
+  };
+
+  const handleEliminar = async (lote: any) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar el lote de ${lote.tipo_material}? (Se marcará como Cancelado)`)) {
+      const supabase = obtenerClienteSupabase();
+      const { error } = await supabase
+        .from('lotes_excedentes')
+        .update({ estado: 'Cancelado' }) // Soft delete
+        .eq('id', lote.id);
+        
+      if (error) {
+        setAviso('Error al eliminar el lote.');
+      } else {
+        setAviso('Lote eliminado (ocultado) correctamente.');
+        recargar();
+      }
+    }
+  };
+
+  const handleChangeEstado = async (lote: any, nuevoEstado: string) => {
+    const supabase = obtenerClienteSupabase();
+    const { error } = await supabase
+      .from('lotes_excedentes')
+      .update({ estado: nuevoEstado })
+      .eq('id', lote.id);
+      
+    if (error) {
+      setAviso('Error al cambiar el estado del lote.');
+    } else {
+      setAviso(`El lote ahora está marcado como ${nuevoEstado}.`);
+      recargar();
+    }
+  };
+
+  const handleModalGuardado = () => {
+    setModalVisible(false);
+    recargar();
+    setAviso('El lote se guardó correctamente.');
+  };
+
   return (
-    <main className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-16 pt-7 sm:px-8 lg:px-12">
+    <main className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-16 pt-7 sm:px-8 lg:px-12 relative">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/90 pb-6">
         <a href="#inicio" className="flex items-center gap-3 text-slate-100 no-underline">
           <span className="grid size-10 place-items-center rounded-xl border border-emerald-400/25 bg-emerald-400/10 text-lg font-bold text-emerald-300">
@@ -49,19 +103,27 @@ export default function EcoRcdDashboard() {
             </p>
           </div>
 
-          <div className="flex gap-8 border-l border-slate-800 pl-5">
-            <div>
-              <p className="text-xs text-slate-500">Lotes disponibles</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
-                {cargando ? '—' : lotes.length}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Volumen publicado</p>
-              <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
-                {cargando ? '—' : formatoVolumen(volumenTotal)}{' '}
-                <span className="text-xs font-medium text-slate-500">m³</span>
-              </p>
+          <div className="flex flex-col gap-4">
+            <button 
+              onClick={handleCrear}
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] self-end mb-2"
+            >
+              + Publicar Nuevo Lote
+            </button>
+            <div className="flex gap-8 border-l border-slate-800 pl-5">
+              <div>
+                <p className="text-xs text-slate-500">Lotes disponibles</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
+                  {cargando ? '—' : lotes.length}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Volumen publicado</p>
+                <p className="mt-1 text-2xl font-semibold tabular-nums text-white">
+                  {cargando ? '—' : formatoVolumen(volumenTotal)}{' '}
+                  <span className="text-xs font-medium text-slate-500">m³</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -113,6 +175,9 @@ export default function EcoRcdDashboard() {
                 lote={lote}
                 indice={indice}
                 onAviso={setAviso}
+                onEdit={handleEditar}
+                onDelete={handleEliminar}
+                onChangeEstado={handleChangeEstado}
               />
             ))}
           </div>
@@ -122,6 +187,15 @@ export default function EcoRcdDashboard() {
       <footer className="mt-16 border-t border-slate-800/90 pt-5 text-xs text-slate-600">
         EcoRCD Cochabamba · Reutilizar materiales, reducir residuos.
       </footer>
+
+      {/* MODAL EMERGENTE DE CREAR / EDITAR */}
+      {modalVisible && (
+        <LoteModal 
+          lote={loteEditando} 
+          onClose={() => setModalVisible(false)} 
+          onSaved={handleModalGuardado} 
+        />
+      )}
     </main>
   );
 }
