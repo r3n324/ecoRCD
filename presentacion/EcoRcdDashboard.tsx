@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useLotesDisponibles } from './useLotesDisponibles';
 import LoteCard from './LoteCard';
 
-function formatoVolumen(valor) {
+function formatoVolumen(valor: number): string {
   return new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 }).format(valor);
 }
 
 export default function EcoRcdDashboard() {
   const { lotes, cargando, error } = useLotesDisponibles();
-  const [aviso, setAviso] = useState('');
+  const [aviso, setAviso] = useState<string>('');
+  
   const volumenTotal = lotes.reduce(
     (total, lote) => total + (Number(lote.volumen_m3) || 0),
     0,

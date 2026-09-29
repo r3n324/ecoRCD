@@ -1,6 +1,9 @@
 import { obtenerClienteSupabase } from './supabase';
+import { PostgrestResponse } from '@supabase/supabase-js';
 
-export async function consultarLotesDisponibles() {
+// No definimos el tipo exacto de retorno de Supabase aquí porque es genérico,
+// lo manejaremos en la capa de negocio
+export async function consultarLotesDisponibles(): Promise<PostgrestResponse<any>> {
   const supabase = obtenerClienteSupabase();
 
   return supabase

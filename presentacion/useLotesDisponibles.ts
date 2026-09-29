@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { obtenerLotesDisponibles } from '../negocio/rcdService';
+import { Lote } from '../negocio/types';
 
-export function useLotesDisponibles() {
-  const [lotes, setLotes] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState('');
+interface UseLotesDisponiblesResult {
+  lotes: Lote[];
+  cargando: boolean;
+  error: string;
+}
+
+export function useLotesDisponibles(): UseLotesDisponiblesResult {
+  const [lotes, setLotes] = useState<Lote[]>([]);
+  const [cargando, setCargando] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     let activo = true;
@@ -15,8 +22,8 @@ export function useLotesDisponibles() {
       const resultado = await obtenerLotesDisponibles();
       if (!activo) return;
 
-      if (resultado.success) {
-        setLotes(resultado.data || []);
+      if (resultado.success && resultado.data) {
+        setLotes(resultado.data);
       } else {
         setError(resultado.error || 'No fue posible cargar los lotes disponibles.');
       }

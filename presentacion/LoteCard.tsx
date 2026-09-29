@@ -1,22 +1,32 @@
 'use client';
 
 import { crearMensajeSolicitudRetiro } from '../negocio/rcdService';
+import { Lote, Constructora } from '../negocio/types';
 
-function valorVisible(valor, alternativa = 'No especificado') {
+function valorVisible(valor: string | number | null | undefined, alternativa: string = 'No especificado'): string | number {
   return valor === null || valor === undefined || valor === ''
     ? alternativa
     : valor;
 }
 
-function formatoVolumen(valor) {
+function formatoVolumen(valor: string | number | null | undefined): string | number {
   const numero = Number(valor);
   return Number.isFinite(numero)
     ? new Intl.NumberFormat('es-BO', { maximumFractionDigits: 1 }).format(numero)
     : valorVisible(valor, '—');
 }
 
-export default function LoteCard({ lote, indice, onAviso }) {
-  const contacto = lote.constructoras || lote.constructora || {};
+interface LoteCardProps {
+  lote: Lote;
+  indice: number;
+  onAviso: (mensaje: string) => void;
+}
+
+export default function LoteCard({ lote, indice, onAviso }: LoteCardProps) {
+  // Manejo defensivo en caso de que venga como array o como un solo objeto
+  const constructorasObj = Array.isArray(lote.constructoras) ? lote.constructoras[0] : lote.constructoras;
+  const contacto: Constructora = constructorasObj || lote.constructora || {};
+  
   const nombreEmpresa = valorVisible(
     contacto.nombre_empresa || contacto.nombre,
     'Empresa oferente',
