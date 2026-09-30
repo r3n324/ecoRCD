@@ -57,7 +57,7 @@ export default function LoteCard({ lote, indice, onAviso, onEdit, onDelete, onCh
       <div className="mb-5 flex items-start justify-between gap-3 border-b border-slate-800/60 pb-5">
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-800 text-sm font-bold text-slate-400">
-            {nombreEmpresa.charAt(0)}
+            {String(nombreEmpresa).charAt(0)}
           </div>
           <div className="overflow-hidden">
             <p className="truncate text-sm font-semibold text-slate-200">{nombreEmpresa}</p>
@@ -70,10 +70,12 @@ export default function LoteCard({ lote, indice, onAviso, onEdit, onDelete, onCh
         <button 
           type="button"
           onClick={() => onChangeEstado && onChangeEstado(lote, (lote as any).estado === 'Disponible' ? 'Reservado' : 'Disponible')}
-          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-all hover:scale-105 active:scale-95 shadow-sm cursor-pointer ${
+          className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm ${
+            onChangeEstado ? 'cursor-pointer transition-all hover:scale-105 active:scale-95' : 'cursor-default'
+          } ${
             (lote as any).estado === 'Reservado' 
-              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20' 
-              : 'bg-slate-800/80 text-slate-400 border border-transparent hover:border-slate-600 hover:bg-slate-700 hover:text-white'
+              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 ' + (onChangeEstado ? 'hover:bg-amber-500/20' : '')
+              : 'bg-slate-800/80 text-slate-400 border border-transparent ' + (onChangeEstado ? 'hover:border-slate-600 hover:bg-slate-700 hover:text-white' : '')
           }`}
           title="Click para cambiar estado"
         >

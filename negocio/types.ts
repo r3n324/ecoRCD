@@ -1,8 +1,15 @@
 export interface Constructora {
+  id?: number | string;
+  user_id?: string;
   nombre_empresa?: string;
   nombre?: string;
-  telefono?: string;
+  nit?: string;
+  tipo_perfil?: string;
   contacto_responsable?: string;
+  telefono?: string;
+  email_corporativo?: string;
+  direccion_oficina?: string;
+  verificado?: boolean;
 }
 
 export interface Lote {
@@ -19,5 +26,17 @@ export interface Lote {
 export interface LotesResponse {
   success: boolean;
   data: Lote[] | null;
+  error: string | null;
+}
+
+export interface Usuario {
+  id: string;
+  email?: string;
+  rol: 'admin' | 'usuario_normal' | 'constructora' | string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  usuario: Usuario | null;
   error: string | null;
 }

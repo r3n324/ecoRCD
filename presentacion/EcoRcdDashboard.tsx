@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLotesDisponibles } from './useLotesDisponibles';
+import { useAuth } from './useAuth';
 import LoteCard from './LoteCard';
 import LoteModal from './LoteModal';
 import { obtenerClienteSupabase } from '../datos/supabase';
@@ -11,6 +12,7 @@ function formatoVolumen(valor: number): string {
 }
 
 export default function EcoRcdDashboard() {
+  const { usuario, cargando: authCargando, logout } = useAuth();
   const { lotes, cargando, error, recargar } = useLotesDisponibles();
   const [aviso, setAviso] = useState<string>('');
   
@@ -71,6 +73,18 @@ export default function EcoRcdDashboard() {
     setAviso('El lote se guardó correctamente.');
   };
 
+  if (authCargando) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 text-emerald-400">
+        <span className="animate-pulse">Cargando sesión...</span>
+      </div>
+    );
+  }
+
+  if (!usuario) {
+    return null; // El hook useAuth se encarga de redirigir a /login
+  }
+
   return (
     <main className="mx-auto min-h-screen w-full max-w-7xl px-5 pb-16 pt-7 sm:px-8 lg:px-12 relative">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800/90 pb-6">
@@ -83,9 +97,22 @@ export default function EcoRcdDashboard() {
             <span className="block text-xs text-slate-500">Cochabamba</span>
           </span>
         </a>
-        <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs text-slate-300">
-          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" />
-          Economía circular en construcción
+        <div className="flex items-center gap-4">
+          {usuario.rol === 'admin' && (
+            <a href="/admin/constructoras" className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors bg-amber-400/10 border border-amber-400/20 px-3 py-1.5 rounded-full">
+              Panel Admin
+            </a>
+          )}
+          <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-3 py-2 text-xs text-slate-300">
+            <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_12px_#34d399]" />
+            {usuario.email}
+          </div>
+          <button
+            onClick={logout}
+            className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors"
+          >
+            Cerrar sesión
+          </button>
         </div>
       </header>
 
@@ -104,12 +131,14 @@ export default function EcoRcdDashboard() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <button 
-              onClick={handleCrear}
-              className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] self-end mb-2"
-            >
-              + Publicar Nuevo Lote
-            </button>
+            {(usuario.rol === 'constructora' || usuario.rol === 'admin') && (
+              <button 
+                onClick={handleCrear}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] self-end mb-2"
+              >
+                + Publicar Nuevo Lote
+              </button>
+            )}
             <div className="flex gap-8 border-l border-slate-800 pl-5">
               <div>
                 <p className="text-xs text-slate-500">Lotes disponibles</p>
@@ -169,17 +198,20 @@ export default function EcoRcdDashboard() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {lotes.map((lote, indice) => (
-              <LoteCard
-                key={lote.id || `${lote.tipo_material}-${lote.direccion}-${indice}`}
-                lote={lote}
-                indice={indice}
-                onAviso={setAviso}
-                onEdit={handleEditar}
-                onDelete={handleEliminar}
-                onChangeEstado={handleChangeEstado}
-              />
-            ))}
+            {lotes.map((lote, indice) => {
+              const puedeEditar = usuario.rol === 'admin' || usuario.rol === 'constructora';
+              return (
+                <LoteCard
+                  key={lote.id || `${lote.tipo_material}-${lote.direccion}-${indice}`}
+                  lote={lote}
+                  indice={indice}
+                  onAviso={setAviso}
+                  onEdit={puedeEditar ? handleEditar : undefined}
+                  onDelete={puedeEditar ? handleEliminar : undefined}
+                  onChangeEstado={puedeEditar ? handleChangeEstado : undefined}
+                />
+              );
+            })}
           </div>
         )}
       </section>

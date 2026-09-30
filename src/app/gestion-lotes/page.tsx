@@ -262,6 +262,7 @@ export default function LotesCRUD() {
             <p className="text-slate-400 col-span-full">No hay lotes registrados.</p>
           )}
         </div>
-      </div>
-    );
-  }
+      )}
+    </div>
+  );
+}
