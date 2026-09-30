@@ -4,6 +4,7 @@ import {
   cerrarSesionSupabase,
   obtenerUsuarioActualSupabase,
 } from '../datos/authRepository';
+import { obtenerClienteSupabase } from '../datos/supabase';
 import { AuthResponse, Usuario } from './types';
 
 // Función auxiliar para extraer el rol
@@ -50,17 +51,33 @@ export async function registrarUsuario(email: string, password: string, rol: str
 export async function cerrarSesion(): Promise<void> {
   await cerrarSesionSupabase();
 }
-
 export async function obtenerUsuarioActual(): Promise<AuthResponse> {
   const { data, error } = await obtenerUsuarioActualSupabase();
 
   if (error || !data.user) {
     return { success: false, usuario: null, error: error?.message || 'No hay sesión activa.' };
   }
+  
+  const rol = extraerRol(data.user);
+  let constructora_id: number | undefined = undefined;
+  
+  if (rol === 'constructora') {
+    const supabase = obtenerClienteSupabase();
+    // Try to find the constructora that matches the user's email
+    const { data: consData } = await supabase
+      .from('constructoras')
+      .select('id')
+      .eq('email_corporativo', data.user.email)
+      .single();
+      
+    if (consData) {
+      constructora_id = consData.id;
+    }
+  }
 
   return {
     success: true,
-    usuario: { id: data.user.id, email: data.user.email, rol: extraerRol(data.user) },
+    usuario: { id: data.user.id, email: data.user.email, rol, constructora_id },
     error: null,
   };
 }

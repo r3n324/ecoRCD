@@ -7,9 +7,10 @@ interface LoteModalProps {
   lote?: any;
   onClose: () => void;
   onSaved: () => void;
+  constructoraId?: number;
 }
 
-export default function LoteModal({ lote, onClose, onSaved }: LoteModalProps) {
+export default function LoteModal({ lote, onClose, onSaved, constructoraId }: LoteModalProps) {
   const [cargandoGPS, setCargandoGPS] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [formData, setFormData] = useState({
@@ -85,7 +86,7 @@ export default function LoteModal({ lote, onClose, onSaved }: LoteModalProps) {
     const supabase = obtenerClienteSupabase();
 
     const payload = {
-      constructora_id: 1, // NOTA: Por defecto 1, deberías usar el ID real de auth en producción
+      constructora_id: constructoraId || 1, // Usa el id pasado o 1 por defecto (admin)
       tipo_material: formData.tipo_material,
       volumen_m3: Number(formData.volumen_m3),
       volumen_disponible_m3: Number(formData.volumen_m3),

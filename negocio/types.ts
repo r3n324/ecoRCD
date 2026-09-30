@@ -33,6 +33,7 @@ export interface Usuario {
   id: string;
   email?: string;
   rol: 'admin' | 'usuario_normal' | 'constructora' | string;
+  constructora_id?: number;
 }
 
 export interface AuthResponse {

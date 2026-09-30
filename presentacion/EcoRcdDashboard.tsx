@@ -199,7 +199,7 @@ export default function EcoRcdDashboard() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {lotes.map((lote, indice) => {
-              const puedeEditar = usuario.rol === 'admin' || usuario.rol === 'constructora';
+              const puedeEditar = usuario.rol === 'admin' || (usuario.rol === 'constructora' && lote.constructora_id === usuario.constructora_id);
               return (
                 <LoteCard
                   key={lote.id || `${lote.tipo_material}-${lote.direccion}-${indice}`}
@@ -226,6 +226,7 @@ export default function EcoRcdDashboard() {
           lote={loteEditando} 
           onClose={() => setModalVisible(false)} 
           onSaved={handleModalGuardado} 
+          constructoraId={usuario.constructora_id}
         />
       )}
     </main>
