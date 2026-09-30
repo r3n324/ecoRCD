@@ -14,6 +14,7 @@ export interface Constructora {
 
 export interface Lote {
   id?: string | number;
+  constructora_id?: number;
   tipo_material: string;
   volumen_m3: number | string;
   zona?: string;
