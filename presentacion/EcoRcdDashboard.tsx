@@ -131,18 +131,14 @@ export default function EcoRcdDashboard() {
           </div>
 
           <div className="flex flex-col gap-4">
-            {usuario.rol === 'constructora' && usuario.constructora_id ? (
+            {usuario.rol === 'constructora' && (
               <button 
                 onClick={handleCrear}
                 className="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold py-3 px-6 rounded-lg transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)] self-end mb-2"
               >
                 + Publicar Nuevo Lote
               </button>
-            ) : usuario.rol === 'constructora' && !usuario.constructora_id ? (
-              <div className="text-amber-400 text-sm max-w-xs text-right border border-amber-500/30 bg-amber-500/10 p-2 rounded">
-                ⚠️ Tu cuenta aún no está vinculada a una empresa en el sistema. Contacta al administrador para poder publicar lotes.
-              </div>
-            ) : null}
+            )}
             <div className="flex gap-8 border-l border-slate-800 pl-5">
               <div>
                 <p className="text-xs text-slate-500">Lotes disponibles</p>
@@ -203,7 +199,7 @@ export default function EcoRcdDashboard() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {lotes.map((lote, indice) => {
-              const puedeEditar = usuario.rol === 'admin' || (usuario.rol === 'constructora' && lote.constructora_id === usuario.constructora_id);
+              const puedeEditar = usuario.rol === 'admin' || usuario.rol === 'constructora';
               return (
                 <LoteCard
                   key={lote.id || `${lote.tipo_material}-${lote.direccion}-${indice}`}
