@@ -14,7 +14,7 @@ export default function ConstructoraModal({ constructora, onClose, onSaved }: Co
   const [formData, setFormData] = useState<Partial<Constructora>>({
     nombre_empresa: constructora?.nombre_empresa || '',
     nit: constructora?.nit || '',
-    tipo_perfil: constructora?.tipo_perfil || 'Empresa Privada',
+    tipo_perfil: constructora?.tipo_perfil || 'Proveedor',
     contacto_responsable: constructora?.contacto_responsable || '',
     telefono: constructora?.telefono || '',
     email_corporativo: constructora?.email_corporativo || '',
@@ -110,9 +110,9 @@ export default function ConstructoraModal({ constructora, onClose, onSaved }: Co
                 onChange={handleChange}
                 className="w-full rounded border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-emerald-500 focus:outline-none"
               >
-                <option value="Empresa Privada">Empresa Privada</option>
-                <option value="Institución Pública">Institución Pública</option>
-                <option value="Contratista Independiente">Contratista Independiente</option>
+                <option value="Proveedor">Proveedor</option>
+                <option value="Receptor">Receptor</option>
+                <option value="Mixto">Mixto</option>
               </select>
             </div>
             <div>
